@@ -5,7 +5,8 @@
 
 // Because arduino is stupid, we don't have STL.  (There is really no good reason for this).
 template <class T, size_t N>
-struct Array {
+struct Array 
+{
     T data[N];
 
     static size_t size() { return N; }
@@ -32,7 +33,8 @@ struct PinState
   const size_t change_time;
 };
 
-enum {
+enum 
+{
   JAMES = 0,
   KIM = 1,
   ANDERS = 2
@@ -42,7 +44,8 @@ template <int PAD>
 const Array<PinState, 4> make_pins();
 
 template<>
-const Array<PinState, 4> make_pins<JAMES>(){
+const Array<PinState, 4> make_pins<JAMES>()
+{
   Array<PinState, 4> arr = {{
     {2, LOW, 'w', 0},
     {4, LOW, 'a', 0},
@@ -53,7 +56,8 @@ const Array<PinState, 4> make_pins<JAMES>(){
 }
 
 template<>
-const Array<PinState, 4> make_pins<KIM>(){
+const Array<PinState, 4> make_pins<KIM>()
+{
   Array<PinState, 4> arr = {{    
     {2, LOW, 'h', 0},
     {4, LOW, 't', 0},
@@ -64,7 +68,8 @@ const Array<PinState, 4> make_pins<KIM>(){
 }
 
 template<>
-const Array<PinState, 4> make_pins<ANDERS>(){
+const Array<PinState, 4> make_pins<ANDERS>()
+{
   Array<PinState, 4> arr = {{    
     {2, LOW, 'v', 0},
     {4, LOW, 'b', 0},
@@ -77,7 +82,8 @@ const Array<PinState, 4> make_pins<ANDERS>(){
 
 static Array<PinState, 4> pins = make_pins<ANDERS>();
 
-void setup() {
+void setup() 
+{
   // make the pushButton pin an input:
   for (auto pin : pins) {
     pinMode(pin.pin_number, INPUT_PULLUP);
@@ -87,28 +93,33 @@ void setup() {
   Keyboard.begin();
 }
 
-enum {
+enum 
+{
   NO_CHANGE = 0,
   BUTTON_PRESSED = 1,
   BUTTON_RELEASED = 2,
 };
 
-int read_button(PinState& pin_state) {
+int read_button(PinState& pin_state) 
+{
   const int current_state = digitalRead(pin_state.pin_number);
   const auto now = micros();
   if (current_state != pin_state.prev_state) 
   {
     // Debounce the input
     const auto debounce_time_us = (pin_state.prev_state == LOW) ? press_time_us : release_time_us;
-    if (now < pin_state.change_time + debounce_time_us) {
+    if (now < pin_state.change_time + debounce_time_us) 
+    {
       return NO_CHANGE;
     }
     
     pin_state.prev_state = current_state;
-    if (current_state == HIGH)
+    if (current_state == HIGH) {
       return BUTTON_RELEASED;
-    else 
+    }
+    else {
       return BUTTON_PRESSED;    
+    }
   }
   return NO_CHANGE;
 }
@@ -122,7 +133,8 @@ void loop()
     if (change == BUTTON_RELEASED)
     {
       Keyboard.release(pin.key);
-    } else if (change == BUTTON_PRESSED)
+    } 
+    else if (change == BUTTON_PRESSED)
     {
       Keyboard.press(pin.key);
     }
