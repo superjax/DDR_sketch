@@ -1,7 +1,10 @@
 // DDR Mat Driver
 // Use a https://www.amazon.com/gp/product/B07FXCTVQP/ref=ppx_yo_dt_b_asin_title_o04_s00?ie=UTF8&psc=1
+// Requires the ArduinoJoystickLibrary (Matthew Heironimus) - install via
+// Library Manager, search "Joystick". Needs a native-USB-HID board
+// (Leonardo/Micro/Due class).
 
-#include "Keyboard.h"
+#include "Joystick.h"
 
 // Because arduino is stupid, we don't have STL.  (There is really no good reason for this).
 template <class T, size_t N>
@@ -29,7 +32,7 @@ struct PinState
 {
   const int pin_number;
   int prev_state;
-  const char key;
+  const uint8_t button;
   const size_t change_time;
 };
 
@@ -47,50 +50,61 @@ template<>
 const Array<PinState, 4> make_pins<JAMES>()
 {
   Array<PinState, 4> arr = {{
-    {2, LOW, 'w', 0},
-    {4, LOW, 'a', 0},
-    {5, LOW, 's', 0},
-    {3, LOW, 'd', 0}
-  }};  
+    {2, LOW, 0, 0},
+    {4, LOW, 1, 0},
+    {5, LOW, 2, 0},
+    {3, LOW, 3, 0}
+  }};
   return arr;
 }
 
 template<>
 const Array<PinState, 4> make_pins<KIM>()
 {
-  Array<PinState, 4> arr = {{    
-    {2, LOW, 'h', 0},
-    {4, LOW, 't', 0},
-    {5, LOW, 'f', 0},
-    {3, LOW, 'h', 0}
-  }};  
+  Array<PinState, 4> arr = {{
+    {2, LOW, 0, 0},
+    {4, LOW, 1, 0},
+    {5, LOW, 2, 0},
+    {3, LOW, 3, 0}
+  }};
   return arr;
 }
 
 template<>
 const Array<PinState, 4> make_pins<ANDERS>()
 {
-  Array<PinState, 4> arr = {{    
-    {2, LOW, 'v', 0},
-    {4, LOW, 'b', 0},
-    {5, LOW, 'n', 0},
-    {3, LOW, 'm', 0}
-  }};  
+  Array<PinState, 4> arr = {{
+    {2, LOW, 0, 0},
+    {4, LOW, 1, 0},
+    {5, LOW, 2, 0},
+    {3, LOW, 3, 0}
+  }};
   return arr;
 }
 
 
 static Array<PinState, 4> pins = make_pins<ANDERS>();
 
-void setup() 
+// 4 buttons, no hat switch, no analog axes - just the pad's 4 switches.
+Joystick_ Joystick(
+  JOYSTICK_DEFAULT_REPORT_ID,
+  JOYSTICK_TYPE_GAMEPAD,
+  4,     // button count
+  0,     // hat switch count
+  false, false, false,  // X, Y, Z axis
+  false, false, false,  // Rx, Ry, Rz
+  false, false,         // rudder, throttle
+  false, false, false); // accelerator, brake, steering
+
+void setup()
 {
   // make the pushButton pin an input:
   for (auto pin : pins) {
     pinMode(pin.pin_number, INPUT_PULLUP);
   }
-  
-  // initialize control over the keyboard:
-  Keyboard.begin();
+
+  // initialize control over the joystick:
+  Joystick.begin();
 }
 
 enum 
@@ -132,11 +146,11 @@ void loop()
     const int change = read_button(pin);
     if (change == BUTTON_RELEASED)
     {
-      Keyboard.release(pin.key);
-    } 
+      Joystick.releaseButton(pin.button);
+    }
     else if (change == BUTTON_PRESSED)
     {
-      Keyboard.press(pin.key);
+      Joystick.pressButton(pin.button);
     }
   }
 }
